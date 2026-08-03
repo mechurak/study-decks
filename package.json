@@ -1,0 +1,20 @@
+{
+  "name": "study-decks",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build-all.mjs",
+    "dev": "node scripts/dev.mjs",
+    "preview": "serve dist",
+    "deploy": "pnpm build && wrangler pages deploy dist --project-name=study-decks"
+  },
+  "devDependencies": {
+    "@slidev/cli": "^52.19.0",
+    "@slidev/theme-default": "^0.25.0",
+    "serve": "^14.2.0",
+    "wrangler": "^4.0.0"
+  }
+}

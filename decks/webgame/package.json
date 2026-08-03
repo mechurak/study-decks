@@ -1,0 +1,11 @@
+{
+  "name": "@decks/webgame",
+  "private": true,
+  "scripts": {
+    "dev": "slidev",
+    "build": "slidev build"
+  },
+  "dependencies": {
+    "phaser": "^4.2.1"
+  }
+}
