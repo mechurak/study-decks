@@ -6,6 +6,8 @@
 
 ```
 decks/<이름>/slides.md    # 덱 하나 = 디렉터리 하나 (독립 package.json)
+decks/<이름>/pages/*.md   # 덱이 크면 장별로 분리하고 slides.md에서 src: 로 참조
+decks/<이름>/style.css    # (선택) 덱 전역 스타일. Slidev이 자동으로 읽는다
 scripts/build-all.mjs     # 전체 빌드 + dist/index.html 인덱스 생성
 dist/                     # 빌드 산출물 (git 무시)
   index.html              # 덱 목록 인덱스 (자동 생성)
@@ -50,6 +52,39 @@ pnpm preview
 
 인덱스의 목차는 본문 `##` 헤딩을 수집해 만든다. 코드 펜스 안 내용과 슬라이드별
 프론트매터는 제외되고, `src:`로 포함한 외부 파일도 따라가서 수집한다.
+
+## 큰 덱 만들기
+
+`supabase` 덱(324장)이 참고 사례다. 장수가 많아지면 다음 두 가지를 쓴다.
+
+**장별 파일 분리** — `slides.md`에는 커버와 `src:` include만 두고 본문은 `pages/`에 나눈다.
+
+```md
+---
+src: ./pages/01-why.md
+---
+```
+
+**밀도 조절** — 내용이 한 화면을 넘치는 슬라이드는 프론트매터에 `class: dense`
+(더 빡빡하게는 `denser`)를 지정한다. 클래스 정의는 덱 루트의 `style.css`에 있다.
+넘치지 않는 슬라이드에 습관적으로 붙이지 말 것. 글씨만 작아진다.
+
+```md
+---
+class: dense
+---
+
+## 표가 긴 슬라이드
+```
+
+**검증** — 수백 장이 되면 눈으로 확인할 수 없다. 빌드가 성공해도 내용이 잘리거나
+목차 딥링크가 어긋날 수 있으므로, 아래 세 가지는 스크립트로 전수 검사한다.
+구체적인 방법과 함정(특히 Mermaid는 shadow DOM에 렌더된다)은
+[docs/SPEC-slidev-study-decks.md](docs/SPEC-slidev-study-decks.md) 5절 참고.
+
+1. `build-all.mjs`의 슬라이드 번호와 `@slidev/parser` 실제 파싱 결과가 일치하는가
+2. 모든 슬라이드가 세로로 넘치지 않는가 (`scrollHeight <= clientHeight`)
+3. 모든 Mermaid 다이어그램이 실제로 렌더되는가
 
 ## 배포 (Cloudflare Pages)
 
