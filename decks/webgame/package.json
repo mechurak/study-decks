@@ -5,7 +5,15 @@
     "dev": "slidev",
     "build": "slidev build"
   },
+  "slidev": {
+    "addons": [
+      "@decks/addon-nav"
+    ]
+  },
   "dependencies": {
     "phaser": "^4.2.1"
+  },
+  "devDependencies": {
+    "@decks/addon-nav": "workspace:*"
   }
 }

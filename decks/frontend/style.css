@@ -652,3 +652,9 @@ html.dark .tree .client {
   font-size: 0.82rem;
   border: 1px solid;
 }
+
+/* 덱 강조 색 — 공통 내비게이션 애드온(목차 팝업)이 참조한다 */
+:root {
+  --deck-accent: #4f46e5;
+  --deck-accent-dark: #a5b4fc;
+}

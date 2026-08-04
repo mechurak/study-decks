@@ -1,0 +1,9 @@
+{
+  "name": "@decks/addon-nav",
+  "version": "0.0.0",
+  "private": true,
+  "description": "덱 공통 내비게이션 — 목차/홈 버튼 + 터치 기기 조작 레이어",
+  "engines": {
+    "slidev": ">=52.0.0"
+  }
+}

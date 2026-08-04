@@ -1,5 +1,6 @@
 packages:
   - decks/*
+  - addons/*
 allowBuilds:
   esbuild: true
   workerd: true

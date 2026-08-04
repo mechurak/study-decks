@@ -43,15 +43,17 @@ study-decks/
   scripts/
     build-all.mjs           # 전체 빌드 + 인덱스 생성
     dev.mjs                 # [변경] pnpm dev <덱이름> 래퍼
+  addons/
+    deck-nav/                   # [변경] 덱 공통 내비게이션 애드온 (아래 4.8 참고)
+      package.json              #   @decks/addon-nav (npm 미배포, workspace)
+      custom-nav-controls.vue   #   목차/홈 버튼 + 터치 기기 조작 레이어
   decks/
     supabase/
-      package.json
+      package.json              # [변경] slidev.addons: ["@decks/addon-nav"]
       slides.md
-      custom-nav-controls.vue   # [변경] 덱 내 목차/홈 버튼 (아래 4.8 참고)
     webgame/
-      package.json
+      package.json              # [변경]
       slides.md
-      custom-nav-controls.vue   # [변경]
       components/
         PhaserDemo.vue
   dist/                     # 빌드 산출물 (git 무시)
@@ -70,6 +72,7 @@ CLI 인자/프롬프트 방식으로 갈음했다 (4.9 배포 참고).
 ### 4.1 `pnpm-workspace.yaml` / `.npmrc`
 
 `decks/*`를 워크스페이스 패키지로 등록한다.
+[변경] 공통 내비게이션 애드온을 분리하면서 `addons/*`도 등록했다 (4.8 참고).
 
 [변경] `.npmrc`에 `shamefully-hoist=true`를 추가했다. pnpm 기본(격리) 모드에서는
 덱 디렉터리(cwd) 기준으로 `@slidev/theme-default` 등이 resolve되지 않아 빌드가 깨진다.
@@ -199,18 +202,37 @@ Phaser 데모를 슬라이드에 임베드한다. 구현 시 반드시 처리해
 게임 키를 가로채는 방식으로 처리했고, 이동 로직은 Phaser 키보드 플러그인 대신
 자체 키 상태 Set을 씬 `update`에서 읽는다. Esc와 종료 버튼 두 가지 탈출 경로 제공.)
 
-### 4.8 `custom-nav-controls.vue` — [추가]
+### 4.8 공통 내비게이션 애드온 `addons/deck-nav/` — [추가]
 
-최초 스펙에는 없던 파일. 각 덱 루트에 두면 Slidev이 하단 내비게이션 바에 삽입해 주는
-공식 커스터마이징 지점으로, 두 가지 버튼을 제공한다:
+최초 스펙에는 없던 파일. `custom-nav-controls.vue`는 Slidev이 하단 내비게이션 바에
+삽입해 주는 공식 커스터마이징 지점이다. 처음에는 덱마다 같은 파일을 복사해 뒀으나,
+467줄까지 커지면서 **로컬 애드온으로 분리했다** (2026-08-04).
+
+- `addons/deck-nav/`는 npm에 배포하지 않는 워크스페이스 패키지(`@decks/addon-nav`).
+  각 덱은 `package.json`의 `slidev.addons`로 붙이고 `devDependencies`에 `workspace:*`.
+- Slidev은 `roots`(테마 → 애드온 → 덱 루트) 전체에서 `custom-nav-controls.vue`를
+  모아 **모두 렌더**한다. 덱 루트에 사본을 남기면 중복 렌더된다.
+- 덱별 강조 색은 덱 `style.css`의 `:root { --deck-accent / --deck-accent-dark }`로
+  덮어쓴다. 없으면 애드온 기본값.
+
+제공 기능:
 
 - **목차**: `useNav()`의 슬라이드 메타(제목)로 팝업 목록을 만들고, 클릭 시 해당
   슬라이드로 이동. 내비게이션 바의 hover 페이드에 팝업이 묻히지 않도록
   `<Teleport to="body">`로 렌더링한다.
 - **홈**: `/`(인덱스)로 복귀하는 링크.
+- **[추가] 터치 기기 조작 레이어** (2026-08-04): Slidev 기본 내비게이션 바는
+  `opacity-0 hover:opacity-100`이라 hover가 없는 기기에서 두 가지로 망가진다 —
+  (a) 보이지 않는 채로 화면 좌하단의 탭을 가로채고(유령 히트영역),
+  (b) 한 번 탭하면 hover가 눌어붙어 나타났다 사라졌다 한다.
+  또 페이지 넘기기가 스와이프뿐이라 불편하다.
+  그래서 `@media (hover: none)`에서 기본 바를 죽이고(전역 `<style>`) 대체 레이어를 둔다:
+  항상 보이는 쪽수 알약 → 탭하면 조작 바(목차/홈/다크/전체화면/이전/다음, 6초 후 자동 접힘),
+  그리고 화면 **좌우 가장자리 22% 탭으로 이전/다음**.
+  가장자리 탭은 `#slide-content` 안이면서 `a/button/canvas/...`가 아닐 때만 동작하므로
+  실물 UI 데모(frontend 덱)나 Phaser 캔버스(webgame 덱)의 조작을 뺏지 않는다.
 
-현재는 덱마다 같은 파일을 복사해 두는 방식이다. 덱이 늘어 관리가 번거워지면
-공통 테마/애드온 패키지로 분리한다 (7절 참고).
+붙이는 법과 상세는 [addons/deck-nav/README.md](../addons/deck-nav/README.md) 참고.
 
 ### 4.9 배포
 

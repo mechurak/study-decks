@@ -66,6 +66,49 @@ for f in *.md; do echo "$f $(grep -c '^```' $f)"; done   # 펜스 개수가 짝�
 - **코드 블록이 지배하는 슬라이드는 `dense`로 수십 px를 못 살린다** (46px 넘침에 14px밖에
   안 줄어든 실측 사례 있음). 폰트가 아니라 줄 수를 줄여라 — 인라인 병합, SQL 포맷 압축 등
 
+## 공통 내비게이션은 애드온이다 (`addons/deck-nav/`)
+
+목차·홈 버튼과 터치 조작 레이어는 **덱마다 복사하지 않는다.** `addons/deck-nav/`가
+로컬 Slidev 애드온이고, 각 덱은 `package.json`의 `slidev.addons`로 붙인다
+(2026-08-04에 3벌 복사 → 애드온으로 전환).
+
+- Slidev의 `custom-nav-controls.vue` / `global-*.vue` / `components/` / `style.css`는
+  전부 **`roots`(테마 → 애드온 → 덱 루트) 전체를 훑어 합친다.** 덱 루트에 같은 파일을
+  남겨 두면 **애드온 것과 둘 다 렌더된다** — 옮길 때 원본을 반드시 지울 것.
+- 애드온 이름은 **워크스페이스 패키지명(`@decks/addon-nav`)으로 쓴다.** 상대 경로도
+  지원하지만 Slidev이 `resolve(dirname(importer), name)`으로 푼다 — importer가 덱 루트
+  **디렉터리**라 한 단계 위(`decks/`) 기준이 되어 헷갈린다.
+- 새 덱은 `devDependencies`에 `"@decks/addon-nav": "workspace:*"`를 넣고 `pnpm install`.
+  빠뜨리면 목차·홈 버튼이 조용히 사라진다.
+- 덱별 강조 색은 덱 `style.css`의 `:root { --deck-accent / --deck-accent-dark }`로
+  덮어쓴다. 없으면 애드온 기본값(teal).
+
+## 터치 기기 조작 레이어 (`addons/deck-nav/custom-nav-controls.vue`)
+
+Slidev 기본 내비게이션 바는 `opacity-0 hover:opacity-100`이다. **hover가 없는 기기에서는
+안 보이는 채로 화면 좌하단의 탭을 그대로 먹는다** (`pointer-events`가 살아 있다).
+한 번 탭하면 hover가 눌어붙어 나타났다 사라졌다 하는 것도 같은 원인이다.
+그래서 `@media (hover: none)`에서 기본 바를 죽이고 자체 레이어를 띄운다 (2026-08-04).
+
+- 기본 바를 죽이는 선택자는 **`#slide-container > div:not(#slide-content)`**.
+  `SlideContainer.vue`의 직계 자식이 본문(`#slide-content`)과 컨트롤 래퍼 둘뿐이라
+  성립한다. 래퍼에는 안정적인 클래스명이 없다 (`absolute bottom-0 …` = UnoCSS 유틸리티).
+  **`opacity`만 0으로 만들면 안 된다 — `pointer-events: none`이 유령 히트영역의 해결책이다.**
+- 좌우 가장자리 탭(22%)으로 페이지를 넘긴다. 판정은 `pointerdown`/`pointerup`을
+  **캡처 단계**에서 직접 본다 — 본문 컴포넌트가 이벤트를 멈춰도 탭을 받아야 하기 때문.
+  대상은 `#slide-content` 안 + `a/button/canvas/video/input…`이 **아닐 때**뿐이다.
+  → 실물 UI 데모(frontend)·Phaser 캔버스(webgame) 조작을 뺏지 않는다.
+  **덱에 새로운 인터랙티브 요소를 넣을 때 `<button>`이 아니면 `data-no-tap-nav`를 달 것.**
+- 레터박스(검은 여백) 탭은 Slidev 기본 동작(좌/우 절반)이 이미 처리한다. 중복 호출을
+  피하려고 `#slide-content` 안으로 한정한 것이기도 하다.
+- 팝업·조작 바는 전부 `<Teleport to="body">`. Slidev의 전체화면 대상이 `document.body`라
+  전체화면에서도 보인다. z-index는 백드롭 99 < 목차 패널 100 < 조작 바 101.
+
+**검증은 레터박스가 아니라 본문 안쪽 가장자리에서 할 것.** 레터박스(검은 여백) 탭은
+Slidev 기본 동작이라, 거기서 테스트하면 우리 핸들러를 한 줄도 안 타고 통과한다
+(실제로 그렇게 오판했었다). 그리고 `next()`는 클릭 단계를 먼저 넘기므로
+**슬라이드 번호만 보면 "안 넘어갔다"고 오판한다 — `location.hash` 전체를 비교할 것.**
+
 ---
 
 ## 검증 — 빌드 성공은 아무것도 보장하지 않는다

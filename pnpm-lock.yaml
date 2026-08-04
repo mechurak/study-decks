@@ -21,15 +21,29 @@ importers:
         specifier: ^4.0.0
         version: 4.118.0
 
-  decks/frontend: {}
+  addons/deck-nav: {}
 
-  decks/supabase: {}
+  decks/frontend:
+    devDependencies:
+      '@decks/addon-nav':
+        specifier: workspace:*
+        version: link:../../addons/deck-nav
+
+  decks/supabase:
+    devDependencies:
+      '@decks/addon-nav':
+        specifier: workspace:*
+        version: link:../../addons/deck-nav
 
   decks/webgame:
     dependencies:
       phaser:
         specifier: ^4.2.1
         version: 4.2.1
+    devDependencies:
+      '@decks/addon-nav':
+        specifier: workspace:*
+        version: link:../../addons/deck-nav
 
 packages:
 
