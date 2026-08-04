@@ -61,6 +61,8 @@ for f in *.md; do echo "$f $(grep -c '^```' $f)"; done   # 펜스 개수가 짝�
 - **넘치지 않는 슬라이드에 습관적으로 붙이지 말 것.** 글씨만 작아진다
 - `denser`의 코드 폰트가 12px다. **그 아래로 더 줄이지 말고 내용을 두 장으로 나눌 것**
 - 표 10행 / 코드 25줄이 대략 한 장의 한계선
+- **코드 블록이 지배하는 슬라이드는 `dense`로 수십 px를 못 살린다** (46px 넘침에 14px밖에
+  안 줄어든 실측 사례 있음). 폰트가 아니라 줄 수를 줄여라 — 인라인 병합, SQL 포맷 압축 등
 
 ---
 
@@ -99,6 +101,11 @@ d.slides[n-1].title      // 목차 항목 텍스트와 일치해야 한다
 const l = document.querySelector(`.slidev-page-${n} .slidev-layout`)
 l.scrollHeight - l.clientHeight   // 0 이하여야 한다 (기준 뷰포트 1600x900)
 ```
+
+**~6px 이하는 렌더 노이즈로 간주한다.** supabase 덱 128·146·250·318번(3~5px)이
+알려진 미세 넘침이다 (2026-08-04 기준). mermaid 슬라이드는 진입 경로(딥링크 직행 vs
+해시 내비게이션)에 따라 높이가 몇 px 흔들린다. 새로 생긴 넘침인지 애매하면
+`git stash` → HEAD 빌드로 기준선을 재서 비교한다. 4px 때문에 `dense`를 붙이지 말 것.
 
 ### 3. Mermaid 렌더 확인 — 함정 주의
 
@@ -140,6 +147,14 @@ supabase.com/docs를 직접 조회해 확인한 것으로, 덱은 이 기준으�
 | Next.js 패키지 | **`@supabase/ssr`** | `@supabase/auth-helpers-nextjs` |
 | Edge Function 템플릿 | **`withSupabase` 핸들러** | `Deno.serve` (여전히 동작은 함) |
 | Realtime 전환 기준 | 동시 구독자 ~3,000 넘으면 Postgres Changes → Broadcast | — |
+| Realtime 필터 연산자 | **`eq neq lt lte gt gte in like ilike match imatch is isdistinct` + `not.` 접두사 + 쉼표 AND** | `eq neq lt lte gt gte in`만 지원 |
+| Realtime 페이로드 축소 | **`postgres_changes` 구독 옵션 `select:`** (PK는 항상 포함) | 그런 옵션 없음 |
+| 구독 없는 Broadcast 전송 | **`channel.httpSend()`** (supabase-js 2.107+) | 미구독 채널에서 `channel.send()` |
+| 로컬 메일 테스트 | **Mailpit** (포트 54324) | Inbucket |
+
+Realtime 세 줄은 2026-08-04 리뷰에서 검토 에이전트가 전부 "존재하지 않는 API"로
+오판했다가 실물 문서로 실재가 확인된 항목들이다. **"이 API는 없다"는 판단은
+반드시 supabase.com/docs를 직접 조회한 뒤에 내릴 것.**
 
 내용 수정 시 유지할 서술 원칙:
 
