@@ -15,6 +15,7 @@ Slidev 스터디 자료 모노레포. 작업 전 [README.md](README.md)(운영 �
 | 덱 | 규모 | 비고 |
 |---|---|---|
 | `supabase` | 324장 | `pages/` 18개 파일로 분할. 한국어. Supabase 입문자 대상 |
+| `frontend` | 319장 | `pages/` 22개 파일로 분할. Next.js·Tailwind·shadcn/ui. **`components/`에 실물 렌더 컴포넌트 12개** |
 | `webgame` | 소규모 | Phaser 4 데모 임베드 |
 
 Slidev 52.19 / mermaid 11.16 / Vue 3 기준.
@@ -161,6 +162,55 @@ Realtime 세 줄은 2026-08-04 리뷰에서 검토 에이전트가 전부 "존�
 - 각 기능을 **"Postgres에서 실체가 무엇인지"**로 연결한다 (덱 전체의 일관된 축)
 - 12장의 축은 **"Vercel은 실행, Supabase는 상태"** — 배치 판단은 전부 여기서 파생
 - 장 끝마다 요약, 주요 장에는 안티패턴 목록을 둔다
+
+---
+
+## frontend 덱 내용을 고칠 때
+
+### 실물 UI를 렌더하는 구조 (이 덱 고유)
+
+"그림 대신 실제로 보여준다"가 이 덱의 축이다. 두 조각으로 되어 있다.
+
+1. **`style.css`의 `.ui-*` 레이어** — shadcn/ui 풍 컴포넌트를 CSS 변수로 구현한 것.
+   `.ui[data-theme="shadcn|material|radix|corporate|dark"]`로 토큰 세트를 갈아끼운다.
+   17장(디자인 시스템)의 데모가 전부 여기 의존한다.
+2. **`components/*.vue` 12개** — `UiSurface` `BtnMatrix` `LoginCard` `ThemeCompare` `ThemeSwitcher`
+   `ColorScale` `ScaleViz` `GalleryDemo` `CvaDemo` `BarChart` `ClassAnatomy` `ResponsiveDemo`
+
+**`.ui-*` 클래스는 Tailwind/UnoCSS가 아니라 `style.css`에 직접 정의한 것**이다.
+Slidev의 UnoCSS 유틸리티(`grid-cols-2`, `pt-4` 등)와 섞여 있으니 혼동하지 말 것.
+토큰을 추가하면 5개 테마 전부에 값을 넣어야 한다 — 하나라도 빠지면 그 테마에서만 깨진다.
+
+### 2026-08-04에 공식 문서로 확인한 것들
+
+이 생태계는 supabase보다도 빠르게 움직인다. 아래는 **모델 학습 시점보다 앞서 있어
+직접 조회해 확인한** 항목이다. 예전 지식으로 되돌리지 말 것.
+
+| 항목 | 현재 | 예전(덱에 쓰면 안 됨) |
+|---|---|---|
+| Next.js | **16.3** | 14 / 15 |
+| 미들웨어 | **`proxy.ts`** (Node.js 런타임 기본) | `middleware.ts` (deprecated, 이름 변경됨) |
+| 캐싱 | **Cache Components** (`cacheComponents: true`) + `use cache` / `use cache: private` / `use cache: remote` | `fetch(next: { revalidate })`, `export const revalidate` |
+| PPR | **Cache Components 켜면 기본 동작** | `experimental.ppr` |
+| 번들러 | **Turbopack** | webpack |
+| 페이지 타입 | **`PageProps<'/posts/[slug]'>` 자동 생성** | 직접 정의 |
+| Tailwind | **4.3, `@import "tailwindcss"` + `@theme`** | v3, `tailwind.config.js` + `@tailwind` 3줄 |
+| PostCSS 플러그인 | **`@tailwindcss/postcss`** | `tailwindcss` + `autoprefixer` |
+| shadcn 기본 베이스 | **Base UI** (2026-07부터) | Radix (여전히 지원. `init -b radix`) |
+| Radix 패키지 | **통합 `radix-ui`** | `@radix-ui/react-*` 개별 |
+| 합성 프롭 | **`render`** | `asChild` |
+| shadcn style | **8종** (vega/nova/maia/lyra/mira/luma/rhea/sera) | `default` / `new-york` 2종 |
+| React | **19.2** — `ref`가 그냥 prop | 18 — `forwardRef` 필요 |
+| React Compiler | **1.0 정식** (2025-10) | 실험적 babel 플러그인 |
+
+**"이 API는 없다"는 판단은 nextjs.org/docs · tailwindcss.com/docs ·
+ui.shadcn.com/docs(특히 `/changelog`)를 직접 조회한 뒤에 내릴 것.**
+
+### 유지할 서술 원칙
+
+- 매 장이 **"이 코드는 어디서 실행되는가"**(빌드/서버/브라우저)로 수렴한다
+- 12장(토큰)과 16장(자산화)이 축이다 — 나머지 장이 이 둘을 참조한다
+- 장 끝마다 요약, 주요 장에 안티패턴 목록
 
 ## 하지 말 것
 
