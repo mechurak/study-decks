@@ -36,6 +36,14 @@ async function scanDecks() {
 const DIVIDER_RE = /^---+$/
 const FENCE_RE = /^```/
 
+/** 헤딩의 마크다운 인라인 표기(`코드`, **굵게**, *기울임*)를 벗겨 목차용 순수 텍스트로 만든다. */
+function plainText(s) {
+  return s
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/(^|[^*])\*([^*]+)\*/g, '$1$2')
+}
+
 /** 헤드매터(파일 첫 블록)에서 key: value 를 정규식으로 최소 추출한다. */
 function parseHeadmatter(lines) {
   const meta = {}
@@ -57,7 +65,9 @@ function parseHeadmatter(lines) {
 }
 
 /**
- * 본문을 스캔하며 ## 헤딩을 (텍스트, 슬라이드 번호)로 수집한다.
+ * 본문을 스캔하며 # / ## 헤딩을 (텍스트, 슬라이드 번호, 레벨)로 수집한다.
+ * # 은 장 구분(layout: section), ## 은 본문 슬라이드 — 이 둘이 목차 트리의 두 단계가 된다.
+ * ### 이하는 수집하지 않는다.
  * counter는 { n } 형태의 공유 카운터 — src: 재귀 시에도 번호가 이어진다.
  */
 function collectFromLines(lines, startIndex, counter, headings, baseDir) {
@@ -93,9 +103,10 @@ function collectFromLines(lines, startIndex, counter, headings, baseDir) {
       continue
     }
 
-    const h = line.match(/^##\s+(.+?)\s*#*\s*$/)
+    // #{1,2} 뒤에 공백이 와야 하므로 ### 이하는 매칭되지 않는다
+    const h = line.match(/^(#{1,2})\s+(.+?)\s*#*\s*$/)
     if (h)
-      headings.push({ text: h[1], slide: counter.n })
+      headings.push({ text: plainText(h[2]), slide: counter.n, level: h[1].length })
   }
 }
 
@@ -155,13 +166,67 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
+/**
+ * 평평한 헤딩 목록을 2단 트리로 만든다.
+ *  - level 1 = 장, level 2 = 그 장에 속한 슬라이드
+ *  - 자식이 없는 장(커버 슬라이드 등)은 버린다
+ *  - 첫 장보다 앞에 나온 level 2는 orphans로 따로 둔다
+ */
+function buildTree(toc) {
+  const chapters = []
+  const orphans = []
+  for (const h of toc) {
+    if (h.level === 1)
+      chapters.push({ ...h, items: [] })
+    else if (chapters.length)
+      chapters[chapters.length - 1].items.push(h)
+    else
+      orphans.push(h)
+  }
+  return { chapters: chapters.filter(c => c.items.length), orphans }
+}
+
+function renderTocItems(name, items) {
+  return items
+    .map(h => `<li><a href="/${name}/#/${h.slide}"><span class="no">${h.slide}</span>${esc(h.text)}</a></li>`)
+    .join('\n            ')
+}
+
 function renderCard(deck) {
   const { name, title, description, toc, slideCount } = deck
-  const summaryItems = toc.slice(0, 3).map(h => esc(h.text)).join(' · ')
-  const more = toc.length > 3 ? ` <span class="more">+${toc.length - 3}</span>` : ''
-  const tocList = toc
-    .map(h => `<li><a href="/${name}/#/${h.slide}"><span class="no">${h.slide}</span>${esc(h.text)}</a></li>`)
-    .join('\n          ')
+  const { chapters, orphans } = buildTree(toc)
+
+  // 장이 2개 이상일 때만 트리로 보여준다. 작은 덱은 기존처럼 평평하게.
+  const asTree = chapters.length > 1
+  const summarySource = asTree ? chapters : toc
+  const summaryItems = summarySource.slice(0, 3).map(h => esc(h.text)).join(' · ')
+  const more = summarySource.length > 3
+    ? ` <span class="more">+${summarySource.length - 3}</span>`
+    : ''
+
+  let tocBody
+  if (asTree) {
+    const orphanList = orphans.length
+      ? `<ol class="toc">\n            ${renderTocItems(name, orphans)}\n          </ol>`
+      : ''
+    // 장 행은 펼치기 전용이다. 링크를 겹치면 오클릭으로 덱을 벗어난다.
+    tocBody = orphanList + chapters.map(c => `
+          <details class="chap">
+            <summary>
+              <span class="chev">▸</span>
+              <span class="ct">${esc(c.text)}</span>
+              <span class="cnt">${c.items.length}</span>
+            </summary>
+            <ol class="toc">
+            ${renderTocItems(name, c.items)}
+            </ol>
+          </details>`).join('')
+  }
+  else {
+    const flat = toc.filter(h => h.level === 2)
+    tocBody = `<ol class="toc">\n            ${renderTocItems(name, flat.length ? flat : toc)}\n          </ol>`
+  }
+
   return `
     <article class="card">
       <a class="card-link" href="/${name}/">
@@ -171,11 +236,10 @@ function renderCard(deck) {
       <p class="summary">${summaryItems ? summaryItems + more : '<span class="more">목차 없음</span>'}</p>
       <div class="card-foot">
         ${toc.length
-          ? `<details>
+          ? `<details class="toc-root">
           <summary>목차</summary>
-          <ol class="toc">
-          ${tocList}
-          </ol>
+          <div class="toc-scroll">${tocBody}
+          </div>
         </details>`
           : ''}
         <span class="count">${slideCount} slides</span>
@@ -268,26 +332,52 @@ function renderIndex(decks) {
   }
   .count { font-size: 12px; color: var(--muted); white-space: nowrap; padding-top: 6px; }
   details { flex: 1; min-width: 0; }
-  summary {
+  summary::-webkit-details-marker { display: none; }
+  summary::marker { content: ''; }
+
+  /* 바깥 "목차" 토글 버튼 */
+  .toc-root > summary {
     display: inline-block; cursor: pointer; user-select: none;
     font-size: 13px; font-weight: 600; color: var(--fg);
     border: 1px solid var(--line); border-radius: 8px; padding: 5px 14px;
     transition: border-color .15s ease, background .15s ease;
   }
-  summary::-webkit-details-marker { display: none; }
-  summary:hover { border-color: var(--accent); }
-  details[open] summary { background: var(--accent-soft); border-color: var(--accent); }
-  .toc { margin: 12px 0 4px; padding: 0; list-style: none; }
+  .toc-root > summary:hover { border-color: var(--accent); }
+  .toc-root[open] > summary { background: var(--accent-soft); border-color: var(--accent); }
+  .toc-scroll { max-height: 380px; overflow-y: auto; margin-top: 10px; }
+
+  /* 장 노드 — 행 전체가 펼치기 토글이다 */
+  .chap > summary {
+    display: flex; align-items: center; gap: 7px;
+    cursor: pointer; user-select: none;
+    padding: 5px 8px; border-radius: 6px;
+    font-size: 13.5px; font-weight: 600;
+  }
+  .chap > summary:hover { background: var(--accent-soft); }
+  .chap > summary:hover .ct { color: var(--accent); }
+  .chev {
+    flex-shrink: 0; width: 11px; font-size: 11px; line-height: 1;
+    color: var(--muted); transition: transform .15s ease;
+  }
+  .chap[open] > summary .chev { transform: rotate(90deg); }
+  .ct { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cnt {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums;
+  }
+  .chap .toc { margin: 2px 0 6px; padding-left: 17px; border-left: 1px solid var(--line); }
+
+  .toc { margin: 2px 0 4px; padding: 0; list-style: none; }
   .toc li + li { margin-top: 2px; }
   .toc a {
     display: flex; gap: 10px; align-items: baseline;
-    padding: 5px 8px; border-radius: 6px;
-    font-size: 13.5px; color: var(--fg); text-decoration: none;
+    padding: 4px 8px; border-radius: 6px;
+    font-size: 13px; color: var(--fg); text-decoration: none;
   }
   .toc a:hover { background: var(--accent-soft); color: var(--accent); }
   .toc .no {
     font-variant-numeric: tabular-nums; color: var(--muted);
-    font-size: 11px; min-width: 18px; text-align: right; flex-shrink: 0;
+    font-size: 11px; min-width: 22px; text-align: right; flex-shrink: 0;
   }
   footer { margin-top: 64px; font-size: 12px; color: var(--muted); }
 </style>
