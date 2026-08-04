@@ -1,0 +1,654 @@
+/*
+  frontend 덱 전역 스타일.
+
+  두 부분으로 되어 있다.
+  1) dense / denser  — 정보량이 많은 슬라이드 밀도 조절 (supabase 덱과 동일한 규약)
+  2) .ui-*           — 슬라이드 안에서 "실물"로 렌더되는 shadcn/ui 풍 컴포넌트 레이어.
+                       토큰(CSS 변수)만 갈아끼우면 같은 마크업이 다른 디자인 시스템으로
+                       보이도록 만들어 두었다. 16장(디자인 시스템 적용)의 데모가 여기 의존한다.
+*/
+
+/* ------------------------------------------------------------------ */
+/* 1. 밀도 조절                                                         */
+/* ------------------------------------------------------------------ */
+
+.slidev-layout.dense h2 {
+  font-size: 1.6rem;
+  margin-bottom: 0.55rem;
+}
+.slidev-layout.dense p {
+  margin: 0.5em 0;
+}
+.slidev-layout.dense li {
+  margin-top: 0.12em;
+  margin-bottom: 0.12em;
+}
+.slidev-layout.dense table {
+  font-size: 0.78em;
+}
+.slidev-layout.dense table th,
+.slidev-layout.dense table td {
+  padding: 0.24em 0.55em;
+}
+.slidev-layout.dense .slidev-code {
+  font-size: 0.74em;
+  line-height: 1.42;
+}
+
+.slidev-layout.denser h2 {
+  font-size: 1.45rem;
+  margin-bottom: 0.4rem;
+}
+.slidev-layout.denser p {
+  margin: 0.38em 0;
+  font-size: 0.9em;
+}
+.slidev-layout.denser li {
+  margin-top: 0.06em;
+  margin-bottom: 0.06em;
+  font-size: 0.9em;
+}
+.slidev-layout.denser table {
+  font-size: 0.68em;
+}
+.slidev-layout.denser table th,
+.slidev-layout.denser table td {
+  padding: 0.16em 0.45em;
+}
+.slidev-layout.denser .slidev-code {
+  font-size: 0.63em;
+  line-height: 1.34;
+}
+
+/* ------------------------------------------------------------------ */
+/* 2. 컴포넌트 레이어 — 토큰                                            */
+/* ------------------------------------------------------------------ */
+
+/*
+  실제 shadcn/ui가 쓰는 토큰 이름을 그대로 따랐다.
+  --ui- 접두사만 붙였다 (Slidev 전역 CSS와 충돌 방지).
+*/
+.ui {
+  --ui-background: #ffffff;
+  --ui-foreground: #09090b;
+  --ui-card: #ffffff;
+  --ui-card-foreground: #09090b;
+  --ui-primary: #18181b;
+  --ui-primary-foreground: #fafafa;
+  --ui-secondary: #f4f4f5;
+  --ui-secondary-foreground: #18181b;
+  --ui-muted: #f4f4f5;
+  --ui-muted-foreground: #71717a;
+  --ui-accent: #f4f4f5;
+  --ui-accent-foreground: #18181b;
+  --ui-destructive: #ef4444;
+  --ui-destructive-foreground: #fafafa;
+  --ui-border: #e4e4e7;
+  --ui-input: #e4e4e7;
+  --ui-ring: #a1a1aa;
+  --ui-radius: 0.5rem;
+  --ui-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ui-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --ui-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --ui-btn-weight: 500;
+  --ui-btn-tracking: 0;
+  --ui-btn-transform: none;
+
+  color: var(--ui-foreground);
+  background: var(--ui-background);
+  font-family: var(--ui-font);
+  font-size: 14px;
+  line-height: 1.45;
+  border-radius: calc(var(--ui-radius) + 4px);
+}
+
+/* 슬라이드 안에 얹을 때 쓰는 표면(surface) */
+.ui-surface {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow);
+}
+
+/* --- 테마 프리셋 : 같은 마크업, 다른 디자인 시스템 ------------------ */
+
+/* shadcn/ui 기본 (zinc) — .ui 기본값과 동일. 명시용 */
+.ui[data-theme="shadcn"] {
+  --ui-radius: 0.5rem;
+}
+
+/* Material Design 3 — 보라 계열, 큰 라운드, 테두리 대신 elevation */
+.ui[data-theme="material"] {
+  --ui-background: #fef7ff;
+  --ui-foreground: #1d1b20;
+  --ui-card: #fef7ff;
+  --ui-card-foreground: #1d1b20;
+  --ui-primary: #6750a4;
+  --ui-primary-foreground: #ffffff;
+  --ui-secondary: #e8def8;
+  --ui-secondary-foreground: #1d192b;
+  --ui-muted: #f3edf7;
+  --ui-muted-foreground: #49454f;
+  --ui-accent: #e8def8;
+  --ui-accent-foreground: #1d192b;
+  --ui-destructive: #b3261e;
+  --ui-border: #cac4d0;
+  --ui-input: #cac4d0;
+  --ui-ring: #6750a4;
+  --ui-radius: 1.25rem;
+  --ui-font: Roboto, ui-sans-serif, system-ui, sans-serif;
+  --ui-shadow: 0 1px 3px 1px rgb(0 0 0 / 0.15);
+  --ui-btn-weight: 500;
+  --ui-btn-tracking: 0.01em;
+}
+
+/* Radix Colors — indigo 스케일, 낮은 채도 배경, 얇은 테두리 */
+.ui[data-theme="radix"] {
+  --ui-background: #fdfdfe;
+  --ui-foreground: #1c2024;
+  --ui-card: #ffffff;
+  --ui-card-foreground: #1c2024;
+  --ui-primary: #3e63dd;
+  --ui-primary-foreground: #ffffff;
+  --ui-secondary: #e6edfe;
+  --ui-secondary-foreground: #1f2d5c;
+  --ui-muted: #f0f4ff;
+  --ui-muted-foreground: #60646c;
+  --ui-accent: #e6edfe;
+  --ui-accent-foreground: #1f2d5c;
+  --ui-destructive: #e5484d;
+  --ui-border: #d9e2fc;
+  --ui-input: #d9e2fc;
+  --ui-ring: #3e63dd;
+  --ui-radius: 0.375rem;
+  --ui-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+}
+
+/* 사내 SI/엔터프라이즈 계열 — 각진 모서리, 진한 파랑, 조밀 */
+.ui[data-theme="corporate"] {
+  --ui-background: #ffffff;
+  --ui-foreground: #101828;
+  --ui-card: #ffffff;
+  --ui-card-foreground: #101828;
+  --ui-primary: #1450a3;
+  --ui-primary-foreground: #ffffff;
+  --ui-secondary: #eef2f6;
+  --ui-secondary-foreground: #1450a3;
+  --ui-muted: #f2f4f7;
+  --ui-muted-foreground: #667085;
+  --ui-accent: #eef2f6;
+  --ui-accent-foreground: #1450a3;
+  --ui-destructive: #d92d20;
+  --ui-border: #d0d5dd;
+  --ui-input: #d0d5dd;
+  --ui-ring: #1450a3;
+  --ui-radius: 0.125rem;
+  --ui-font: "Segoe UI", Pretendard, ui-sans-serif, system-ui, sans-serif;
+  --ui-shadow: none;
+  --ui-btn-weight: 600;
+}
+
+/* 다크 (shadcn dark 토큰) */
+.ui[data-theme="dark"] {
+  --ui-background: #09090b;
+  --ui-foreground: #fafafa;
+  --ui-card: #09090b;
+  --ui-card-foreground: #fafafa;
+  --ui-primary: #fafafa;
+  --ui-primary-foreground: #18181b;
+  --ui-secondary: #27272a;
+  --ui-secondary-foreground: #fafafa;
+  --ui-muted: #27272a;
+  --ui-muted-foreground: #a1a1aa;
+  --ui-accent: #27272a;
+  --ui-accent-foreground: #fafafa;
+  --ui-destructive: #7f1d1d;
+  --ui-destructive-foreground: #fafafa;
+  --ui-border: #27272a;
+  --ui-input: #27272a;
+  --ui-ring: #d4d4d8;
+  --ui-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+}
+
+/* ------------------------------------------------------------------ */
+/* 3. 컴포넌트 레이어 — 실제 컴포넌트                                    */
+/* ------------------------------------------------------------------ */
+
+.ui * {
+  box-sizing: border-box;
+}
+
+/* --- Button --- */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  border-radius: calc(var(--ui-radius) - 2px);
+  border: 1px solid transparent;
+  font-size: 0.875rem;
+  font-weight: var(--ui-btn-weight);
+  letter-spacing: var(--ui-btn-tracking);
+  text-transform: var(--ui-btn-transform);
+  height: 2.25rem;
+  padding: 0 1rem;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.ui[data-theme="material"] .ui-btn {
+  border-radius: 100px;
+  height: 2.5rem;
+  padding: 0 1.5rem;
+}
+.ui-btn--default {
+  background: var(--ui-primary);
+  color: var(--ui-primary-foreground);
+  box-shadow: var(--ui-shadow);
+}
+.ui-btn--default:hover {
+  filter: brightness(1.25);
+}
+.ui-btn--secondary {
+  background: var(--ui-secondary);
+  color: var(--ui-secondary-foreground);
+}
+.ui-btn--destructive {
+  background: var(--ui-destructive);
+  color: #fff;
+}
+.ui-btn--outline {
+  background: var(--ui-background);
+  color: var(--ui-foreground);
+  border-color: var(--ui-input);
+  box-shadow: var(--ui-shadow);
+}
+.ui-btn--outline:hover {
+  background: var(--ui-accent);
+  color: var(--ui-accent-foreground);
+}
+.ui-btn--ghost {
+  background: transparent;
+  color: var(--ui-foreground);
+}
+.ui-btn--ghost:hover {
+  background: var(--ui-accent);
+}
+.ui-btn--link {
+  background: transparent;
+  color: var(--ui-primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  padding: 0;
+  height: auto;
+}
+.ui-btn--sm {
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+}
+.ui-btn--lg {
+  height: 2.5rem;
+  padding: 0 2rem;
+}
+.ui-btn--icon {
+  width: 2.25rem;
+  padding: 0;
+}
+.ui-btn:disabled,
+.ui-btn[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.ui-btn:focus-visible {
+  outline: 2px solid var(--ui-ring);
+  outline-offset: 2px;
+}
+/* 포커스 링을 강제로 보여주는 데모용 */
+.ui-btn[data-focus] {
+  outline: 2px solid var(--ui-ring);
+  outline-offset: 2px;
+}
+
+/* --- Input / Label / Textarea --- */
+.ui-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+}
+.ui-input {
+  display: flex;
+  width: 100%;
+  height: 2.25rem;
+  border-radius: calc(var(--ui-radius) - 2px);
+  border: 1px solid var(--ui-input);
+  background: var(--ui-background);
+  color: var(--ui-foreground);
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  box-shadow: var(--ui-shadow);
+}
+.ui-input::placeholder {
+  color: var(--ui-muted-foreground);
+}
+.ui-input:focus {
+  outline: 2px solid var(--ui-ring);
+  outline-offset: 1px;
+}
+.ui-input[aria-invalid="true"] {
+  border-color: var(--ui-destructive);
+}
+.ui-help {
+  font-size: 0.75rem;
+  color: var(--ui-muted-foreground);
+  margin-top: 0.3rem;
+}
+.ui-error {
+  font-size: 0.75rem;
+  color: var(--ui-destructive);
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+/* --- Card --- */
+.ui-card {
+  border-radius: var(--ui-radius);
+  border: 1px solid var(--ui-border);
+  background: var(--ui-card);
+  color: var(--ui-card-foreground);
+  box-shadow: var(--ui-shadow);
+}
+.ui[data-theme="material"] .ui-card {
+  border-color: transparent;
+  background: #f7f2fa;
+}
+.ui-card__header {
+  padding: 1rem 1.25rem 0.5rem;
+}
+.ui-card__title {
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+.ui-card__desc {
+  font-size: 0.8125rem;
+  color: var(--ui-muted-foreground);
+  margin-top: 0.2rem;
+}
+.ui-card__content {
+  padding: 0.5rem 1.25rem 1rem;
+}
+.ui-card__footer {
+  padding: 0 1.25rem 1.1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* --- Badge --- */
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.ui-badge--default {
+  background: var(--ui-primary);
+  color: var(--ui-primary-foreground);
+}
+.ui-badge--secondary {
+  background: var(--ui-secondary);
+  color: var(--ui-secondary-foreground);
+}
+.ui-badge--destructive {
+  background: var(--ui-destructive);
+  color: #fff;
+}
+.ui-badge--outline {
+  color: var(--ui-foreground);
+  border-color: var(--ui-border);
+}
+
+/* --- Alert --- */
+.ui-alert {
+  border-radius: var(--ui-radius);
+  border: 1px solid var(--ui-border);
+  padding: 0.75rem 1rem;
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+}
+.ui-alert--destructive {
+  border-color: var(--ui-destructive);
+  color: var(--ui-destructive);
+}
+.ui-alert__title {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+.ui-alert__desc {
+  font-size: 0.8125rem;
+  opacity: 0.85;
+}
+
+/* --- Switch / Checkbox --- */
+.ui-switch {
+  display: inline-flex;
+  align-items: center;
+  width: 2.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  background: var(--ui-input);
+  padding: 2px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+}
+.ui-switch[data-on="true"] {
+  background: var(--ui-primary);
+}
+.ui-switch__thumb {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  transition: transform 0.15s;
+}
+.ui-switch[data-on="true"] .ui-switch__thumb {
+  transform: translateX(1rem);
+}
+.ui-checkbox {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 3px;
+  border: 1px solid var(--ui-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ui-primary-foreground);
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+.ui-checkbox[data-on="true"] {
+  background: var(--ui-primary);
+}
+
+/* --- Tabs --- */
+.ui-tabs {
+  display: inline-flex;
+  background: var(--ui-muted);
+  border-radius: calc(var(--ui-radius) - 2px);
+  padding: 3px;
+  gap: 2px;
+}
+.ui-tabs__trigger {
+  padding: 0.25rem 0.75rem;
+  border-radius: calc(var(--ui-radius) - 4px);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--ui-muted-foreground);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+.ui-tabs__trigger[data-active="true"] {
+  background: var(--ui-background);
+  color: var(--ui-foreground);
+  box-shadow: var(--ui-shadow);
+}
+
+/* --- Table --- */
+.ui-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+.ui-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--ui-muted-foreground);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--ui-border);
+}
+.ui-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--ui-border);
+}
+
+/* --- Avatar / Skeleton / Separator / Progress --- */
+.ui-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  background: var(--ui-muted);
+  color: var(--ui-muted-foreground);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.ui-skeleton {
+  background: var(--ui-muted);
+  border-radius: calc(var(--ui-radius) - 2px);
+  animation: ui-pulse 1.6s ease-in-out infinite;
+}
+@keyframes ui-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.ui-separator {
+  height: 1px;
+  background: var(--ui-border);
+  margin: 0.6rem 0;
+}
+.ui-progress {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--ui-muted);
+  overflow: hidden;
+}
+.ui-progress__bar {
+  height: 100%;
+  background: var(--ui-primary);
+}
+
+/* --- Dialog (정적 표현) --- */
+.ui-dialog {
+  border-radius: var(--ui-radius);
+  border: 1px solid var(--ui-border);
+  background: var(--ui-card);
+  box-shadow: var(--ui-shadow-lg);
+  padding: 1.25rem;
+  max-width: 26rem;
+}
+.ui-dialog__overlay {
+  background: rgb(0 0 0 / 0.35);
+  padding: 1.5rem;
+  border-radius: var(--ui-radius);
+  display: flex;
+  justify-content: center;
+}
+
+/* ------------------------------------------------------------------ */
+/* 4. 설명용 보조 시각화                                                */
+/* ------------------------------------------------------------------ */
+
+/* 색 스케일 스와치 */
+.swatch-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 3px;
+}
+.swatch {
+  height: 2.6rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-size: 9px;
+  font-family: ui-monospace, monospace;
+  padding-bottom: 2px;
+}
+
+/* 코드 ↔ 결과 대조 박스 */
+.demo-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  align-items: start;
+}
+.demo-note {
+  font-size: 0.75rem;
+  color: #71717a;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+/* 서버/클라이언트 경계 트리 */
+.tree {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  line-height: 1.9;
+}
+.tree .server {
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 4px;
+  padding: 1px 7px;
+}
+.tree .client {
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 4px;
+  padding: 1px 7px;
+}
+html.dark .tree .server {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+html.dark .tree .client {
+  background: #4a3410;
+  color: #fcd34d;
+}
+
+/* 레이어 다이어그램 */
+.layer {
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.82rem;
+  border: 1px solid;
+}
