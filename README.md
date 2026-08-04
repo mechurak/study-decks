@@ -26,6 +26,7 @@ pnpm install
 # 개별 덱 dev 서버
 pnpm dev supabase
 pnpm dev frontend
+pnpm dev cka
 pnpm dev webgame
 
 # 전체 빌드 (dist/ 초기화 후 재생성)
@@ -78,7 +79,7 @@ pnpm preview
 
 ## 큰 덱 만들기
 
-`supabase`(324장)와 `frontend`(319장) 덱이 참고 사례다. 장수가 많아지면 다음 두 가지를 쓴다.
+`cka`(358장)·`supabase`(324장)·`frontend`(319장) 덱이 참고 사례다. 장수가 많아지면 다음 두 가지를 쓴다.
 
 **장별 파일 분리** — `slides.md`에는 커버와 `src:` include만 두고 본문은 `pages/`에 나눈다.
 

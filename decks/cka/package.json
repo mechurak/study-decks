@@ -1,0 +1,16 @@
+{
+  "name": "@decks/cka",
+  "private": true,
+  "scripts": {
+    "dev": "slidev",
+    "build": "slidev build"
+  },
+  "slidev": {
+    "addons": [
+      "@decks/addon-nav"
+    ]
+  },
+  "devDependencies": {
+    "@decks/addon-nav": "workspace:*"
+  }
+}

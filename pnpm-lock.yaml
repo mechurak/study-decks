@@ -23,6 +23,12 @@ importers:
 
   addons/deck-nav: {}
 
+  decks/cka:
+    devDependencies:
+      '@decks/addon-nav':
+        specifier: workspace:*
+        version: link:../../addons/deck-nav
+
   decks/frontend:
     devDependencies:
       '@decks/addon-nav':
