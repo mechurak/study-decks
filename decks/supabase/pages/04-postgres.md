@@ -57,7 +57,7 @@ auth.users (
 
 ## profiles 패턴 — 가장 먼저 만드는 테이블
 
-```sql {1-8|10-19|21-24|all}
+```sql {1-8|10-21|23-25|all}
 create table public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
   username    text unique check (char_length(username) between 3 and 30),
@@ -102,6 +102,13 @@ create trigger on_auth_user_created
 
 **4. 다른 테이블이 참조할 대상이 생긴다**
 `posts.author_id → profiles.id` 로 걸면 조인 시 프로필 정보를 함께 가져올 수 있다.
+
+```sql
+-- 3장에서 auth.users를 참조했던 FK를 profiles로 옮긴다 (5장의 중첩 조회가 이 FK를 쓴다)
+alter table public.posts
+  drop constraint posts_author_id_fkey,
+  add foreign key (author_id) references public.profiles (id) on delete cascade;
+```
 
 </v-clicks>
 
@@ -368,6 +375,8 @@ create materialized view public.daily_stats as
   select date_trunc('day', created_at) as day, count(*) as posts
   from public.posts group by 1;
 
+-- concurrently 갱신은 유니크 인덱스가 있어야 가능하다
+create unique index on public.daily_stats (day);
 refresh materialized view concurrently public.daily_stats;
 ```
 
@@ -410,7 +419,7 @@ commit;
 
 ## 데이터베이스 함수 (RPC) 맛보기
 
-```sql {1-14|16-17|all}
+```sql {1-14|15-16|all}
 create or replace function public.transfer(
   from_account bigint,
   to_account   bigint,
@@ -454,6 +463,9 @@ begin
   return new;
 end;
 $$;
+
+-- posts에는 아직 updated_at 컬럼이 없다. 먼저 추가한다
+alter table public.posts add column updated_at timestamptz not null default now();
 
 create trigger posts_set_updated_at
   before update on public.posts

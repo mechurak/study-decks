@@ -102,7 +102,7 @@ Table Editor 클릭보다 SQL로 만드는 습관을 들이자. 나중에 그대
 ```sql {1-8|10-11|13-22|all}
 create table public.posts (
   id          bigint generated always as identity primary key,
-  author_id   uuid not null references auth.users (id) on delete cascade,
+  author_id   uuid not null default auth.uid() references auth.users (id) on delete cascade,
   title       text not null check (char_length(title) between 1 and 200),
   body        text,
   published   boolean not null default false,
@@ -163,7 +163,7 @@ const { data, error } = await supabase
   .order('created_at', { ascending: false })
   .limit(10)
 
-// 삽입 — author_id는 넣지 않는다. 기본값/트리거로 채우는 편이 안전하다
+// 삽입 — author_id는 넣지 않는다. 기본값 auth.uid()가 채운다 (로그인 상태 가정)
 const { data: created, error: insertError } = await supabase
   .from('posts')
   .insert({ title: '첫 글', body: '내용' })
@@ -264,7 +264,7 @@ Started supabase local development setup.
      GraphQL URL: http://127.0.0.1:54321/graphql/v1
           DB URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       Studio URL: http://127.0.0.1:54323
-    Inbucket URL: http://127.0.0.1:54324
+     Mailpit URL: http://127.0.0.1:54324
       JWT secret: super-secret-jwt-token-with-at-least-32-characters-long
         anon key: eyJhbGciOiJIUzI1NiIs...
 service_role key: eyJhbGciOiJIUzI1NiIs...
@@ -286,7 +286,7 @@ service_role key: eyJhbGciOiJIUzI1NiIs...
 | `54321` | API Gateway | `/rest/v1`, `/auth/v1`, `/storage/v1`, `/functions/v1` 전부 여기로 |
 | `54322` | Postgres | `psql`, Prisma, DBeaver로 직접 붙는 주소 |
 | `54323` | Studio | 로컬 대시보드. 원격과 UI가 동일하다 |
-| `54324` | Inbucket / Mailpit | **로컬 메일 서버** — 가입 확인 메일, 매직 링크를 여기서 확인 |
+| `54324` | Mailpit | **로컬 메일 서버** — 가입 확인 메일, 매직 링크를 여기서 확인 |
 
 <v-click>
 
@@ -373,6 +373,8 @@ insert into public.posts (author_id, title, body, published) values
 
 <v-clicks>
 
+- `auth.users` 직접 insert는 시드 편의용이다. GoTrue가 쓰는 토큰 컬럼들이 비어
+  **이 계정으로 로그인은 안 될 수 있다** — 로그인 테스트 계정은 Studio나 `signUp`으로 만든다
 - 시드는 **로컬과 프리뷰 브랜치에만** 적용된다. 프로덕션에는 실행되지 않는다
 - 고정 UUID를 쓰면 테스트 코드에서 참조하기 쉽다
 - 시드가 커지면 여러 파일로 나누고 `config.toml`의 `[db.seed]`에서 glob으로 지정한다

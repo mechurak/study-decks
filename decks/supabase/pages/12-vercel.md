@@ -14,7 +14,7 @@ layout: section
 
 두 회사 모두 "백엔드도 됩니다"라고 말하기 때문에 생기는 혼란이다.
 
-- Vercel: Functions, Postgres 파트너 제품, Blob, KV, Cron, AI SDK…
+- Vercel: Functions, 파트너 Postgres/Redis, Blob, Cron, AI SDK…
 - Supabase: Edge Functions, Cron, Queues, Storage, Vector…
 
 </v-clicks>
@@ -67,7 +67,7 @@ Supabase는 <strong>상태를 보관</strong>하는 회사다.
 <v-click>
 
 <div class="pt-6 text-center">
-<strong>Vercel은 껐다 켜도 데이터가 안 사라진다. Supabase는 사라진다.</strong><br>
+<strong>Vercel은 지워도 데이터가 안 사라진다. Supabase를 지우면 사라진다.</strong><br>
 <span class="text-sm opacity-70">이 비대칭이 모든 판단의 출발점이다.</span>
 </div>
 
@@ -123,7 +123,7 @@ class: dense
 | 스케줄 작업 | Vercel Cron | pg_cron | DB 작업이면 Supabase |
 | 큐 | Vercel Queues | pgmq | DB 트랜잭션과 묶이면 Supabase |
 | 파일 저장 | Blob | Storage | **권한이 필요하면 Supabase** |
-| KV 캐시 | Vercel KV | (Postgres/외부) | 세션 캐시는 Vercel |
+| KV 캐시 | 파트너 Redis (Upstash) | (Postgres/외부) | 세션 캐시는 Vercel 쪽 |
 | 이미지 최적화 | `next/image` | Storage 변환 | **한 쪽만 쓴다** (중복 과금) |
 | 인증 | (직접 구현) | Auth | **Supabase** |
 | DB | 파트너 Postgres | Postgres | **Supabase** (통합 이점) |
@@ -333,7 +333,7 @@ flowchart LR
 - Next.js 프로젝트라면 `vercel.json`이나 프로젝트 설정에서 **함수 리전을 DB 리전에 맞춘다**
 
 ```json
-{ "functions": { "app/**": { "maxDuration": 30 } }, "regions": ["icn1"] }
+{ "functions": { "app/api/**/*.ts": { "maxDuration": 30 } }, "regions": ["icn1"] }
 ```
 
 - **Edge 런타임은 사용자에게는 가깝지만 DB에서는 멀 수 있다.** DB를 많이 읽는 라우트는 Node 런타임 + DB 리전이 낫다

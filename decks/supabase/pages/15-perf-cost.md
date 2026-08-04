@@ -162,9 +162,10 @@ DB와 함수가 다른 리전이면 여기에 왕복 지연까지 곱해진다.
 await supabase.from('posts').select().range(2000, 2019)
 
 // 커서: 인덱스로 바로 점프한다. 깊이와 무관하게 일정한 속도
+// c = 마지막 행의 { ts, id }. 정렬 키가 유일하지 않으니 (created_at, id) 복합 커서
 await supabase.from('posts')
   .select()
-  .lt('created_at', cursor)
+  .or(`created_at.lt.${c.ts},and(created_at.eq.${c.ts},id.lt.${c.id})`)
   .order('created_at', { ascending: false })
   .order('id', { ascending: false })      // tie-breaker
   .limit(20)
@@ -264,11 +265,12 @@ await supabase.storage.from('avatars').upload(path, file, { cacheControl: '31536
 
 ```sql
 create materialized view daily_stats as select ...;
+create unique index on daily_stats (day);   -- concurrently 갱신의 전제 조건
 select cron.schedule('refresh', '*/10 * * * *',
   $$ refresh materialized view concurrently daily_stats $$);
 ```
 
-**4. 애플리케이션 캐시** — Vercel KV, Redis 등
+**4. 애플리케이션 캐시** — Redis(Vercel Marketplace의 Upstash 등)
 
 </v-clicks>
 

@@ -72,7 +72,8 @@ $$;
 
 <v-click>
 
-`security definer`로 RLS 재귀를 끊고, `stable`로 쿼리당 결과를 캐시한다.
+`security definer`로 RLS 재귀를 끊는다. 문장 단위 캐시는 `stable`이 아니라
+정책에서 `(select ...)`로 감싼 형태가 만들어 준다 (7장).
 
 </v-click>
 
@@ -463,7 +464,7 @@ alter publication supabase_realtime add table public.notifications;
 6. **뷰로 RLS 우회** — `security_invoker = on` 누락
 7. **`verify_jwt = false` 함수에 자체 검증 없음** — 공개 엔드포인트
 8. **소유자 컬럼을 클라이언트가 지정** — `default auth.uid()`를 쓰자
-9. **`update` 정책에 `with check` 누락** — 소유권 이전이 가능해진다
+9. **`update` 정책에 `with check (true)` 같은 느슨한 조건** — 소유권 이전(작성자 변경)이 가능해진다
 
 </v-clicks>
 

@@ -402,6 +402,7 @@ export async function GET() {
 
 Route Handler는 **OAuth 콜백, 웹훅 수신, 파일 다운로드, 외부 API 프록시**에 쓴다.
 단순 데이터 조회는 Server Component가 더 간단하다.
+웹훅이 프론트 배포와 독립적으로 살아 있어야 하면 Edge Function 쪽이 낫다 (12·16장).
 
 </v-click>
 
@@ -603,7 +604,7 @@ app/
 ├── (app)/dashboard/layout.tsx      # 인증 가드
 │   └── posts/page.tsx
 ├── api/
-│   └── stripe/webhook/route.ts
+│   └── stripe/webhook/route.ts     # 또는 Edge Function (16장)
 └── logout/route.ts
 
 lib/

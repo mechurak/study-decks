@@ -202,7 +202,7 @@ const { data, error } = await supabase.auth.signUp({
 
 - 이메일 확인이 켜져 있으면 `data.user`는 오지만 **`data.session`은 `null`** 이다
 - 확인 메일의 링크를 눌러야 세션이 생긴다
-- 로컬 개발에서는 `http://127.0.0.1:54324`(Inbucket)에서 메일을 확인한다
+- 로컬 개발에서는 `http://127.0.0.1:54324`(Mailpit)에서 메일을 확인한다
 - 비밀번호 정책(최소 길이, 문자 조합, 유출된 비밀번호 차단)은 대시보드에서 설정한다
 
 </v-clicks>
@@ -400,9 +400,10 @@ await supabase.auth.updateUser({ email: 'alice@example.com' })
 - **RLS에서 익명 사용자를 구분**할 수 있다
 
 ```sql
-create policy "익명은 읽기만"
-  on documents for select to authenticated
-  using ( (select auth.jwt() ->> 'is_anonymous')::boolean = false );
+-- 읽기는 열어 두고, 쓰기는 정식 계정만
+create policy "익명은 쓰기 금지"
+  on documents for insert to authenticated
+  with check ( (select auth.jwt() ->> 'is_anonymous')::boolean = false );
 ```
 
 - 남용 방지를 위해 CAPTCHA(hCaptcha/Turnstile) 연동을 권장한다

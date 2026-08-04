@@ -117,9 +117,9 @@ flowchart LR
 <v-click>
 
 ```sql
--- Supabase는 기본적으로 public 스키마에 이 GRANT를 걸어둔다
-grant select on public.posts to anon;
-grant select, insert, update, delete on public.posts to authenticated;
+-- Supabase는 기본적으로 public 스키마 테이블에 모든 권한을 GRANT해 둔다
+-- (RLS를 안 켠 테이블에 anon이 쓰기까지 가능한 이유가 이것이다)
+grant all on public.posts to anon, authenticated;
 ```
 
 직접 만든 스키마(`app` 등)를 쓸 때는 **GRANT를 직접 해줘야 한다.** 잊으면 정책이 맞아도 거부된다.
@@ -237,8 +237,9 @@ select auth.jwt();
 <v-click>
 
 **null 주의:** SQL에서 `null = 값`은 `true`가 아니라 `null`이다.
-로그인하지 않은 요청에서 `auth.uid() = user_id`는 자동으로 거짓 취급되어 안전하지만,
-`not (auth.uid() = user_id)` 같은 부정 조건을 쓸 때는 의도치 않게 통과할 수 있다.
+정책의 USING/WITH CHECK에서 `null`은 거짓 취급이라, 로그인하지 않은 요청에서는
+`auth.uid() = user_id`도, `not (...)` 같은 부정 조건도 **닫히는 쪽으로** 실패한다.
+그래도 가드를 명시하면 의도가 드러나고 인덱스 활용 판단에도 유리하다.
 
 ```sql
 using ( auth.uid() is not null and auth.uid() = user_id )

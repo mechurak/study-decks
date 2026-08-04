@@ -37,7 +37,7 @@ Postgres를 쓴다는 것의 진짜 이점
 -- 스키마를 지정해서 설치하는 것이 관례다 (public 오염 방지)
 create extension if not exists vector with schema extensions;
 create extension if not exists pg_cron;
-create extension if not exists pg_net with schema extensions;
+create extension if not exists pg_net;   -- pg_net은 자체 net 스키마에 고정된다
 create extension if not exists pgmq;
 
 -- 설치된 확장 확인
@@ -181,7 +181,7 @@ DB 안에서 실행되므로 네트워크 왕복과 인증이 없다.
 ## pg_net — DB에서 HTTP 호출
 
 ```sql
-create extension if not exists pg_net with schema extensions;
+create extension if not exists pg_net;
 
 -- 비동기 HTTP 요청 (즉시 리턴, 응답은 나중에 테이블에 쌓인다)
 select net.http_post(

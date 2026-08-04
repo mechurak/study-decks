@@ -376,7 +376,7 @@ await supabase.from('posts').insert([
 <v-click>
 
 ```sql
--- 이렇게 해두면 클라이언트가 author_id를 위조할 수 없다
+-- 3장에서 걸어둔 기본값 — 클라이언트가 author_id를 위조할 수 없다
 alter table posts alter column author_id set default auth.uid();
 ```
 

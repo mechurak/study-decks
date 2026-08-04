@@ -102,6 +102,7 @@ create index if not exists posts_created_at_idx on public.posts (created_at desc
 
 ```sql
 -- 큰 테이블의 인덱스는 반드시 concurrently
+-- 단, 트랜잭션 안에서 실행 불가 → 마이그레이션 파일 말고 SQL Editor에서 직접 실행한다
 create index concurrently if not exists posts_title_idx on public.posts (title);
 
 -- not null 추가는 2단계로

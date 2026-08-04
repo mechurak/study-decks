@@ -320,6 +320,8 @@ flowchart TD
 </v-click>
 
 ---
+class: dense
+---
 
 ## private 채널과 인가
 
@@ -330,20 +332,21 @@ const channel = supabase.channel('room:42', { config: { private: true } })
 ```sql
 -- realtime.messages 테이블에 RLS 정책을 건다
 create policy "방 참여자만 구독 가능"
-  on realtime.messages for select
-  to authenticated
-  using (
-    exists (
-      select 1 from public.room_members
-      where user_id = (select auth.uid())
-        and 'room:' || room_id::text = realtime.topic()
-    )
-  );
+  on realtime.messages for select to authenticated
+  using ( exists (
+    select 1 from public.room_members
+    where user_id = (select auth.uid())
+      and 'room:' || room_id::text = realtime.topic()
+  ) );
 
--- 메시지 전송 권한은 insert 정책으로
+-- 전송 권한은 insert 정책으로, 같은 조건을 with check에 반복한다
 create policy "방 참여자만 전송 가능"
   on realtime.messages for insert to authenticated
-  with check ( /* 위와 동일한 조건 */ true );
+  with check ( exists (
+    select 1 from public.room_members
+    where user_id = (select auth.uid())
+      and 'room:' || room_id::text = realtime.topic()
+  ) );
 ```
 
 <v-click>

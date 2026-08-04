@@ -147,8 +147,8 @@ create policy "자기 폴더 조회"
     and (storage.foldername(name))[1] = (select auth.uid())::text
   );
 
--- 삭제는 소유자 컬럼으로도 가능하다
---   using ( bucket_id = 'documents' and owner = (select auth.uid()) )
+-- 삭제는 소유자 컬럼(owner_id, text 타입)으로도 가능하다
+--   using ( bucket_id = 'documents' and owner_id = (select auth.uid())::text )
 ```
 
 ---
@@ -169,7 +169,7 @@ documents/
 create policy "팀 문서 조회"
   on storage.objects for select to authenticated
   using (
-    bucket_id = 'team-files'
+    bucket_id = 'documents'
     and (storage.foldername(name))[1] in (
       select team_id::text from public.team_members
       where user_id = (select auth.uid())

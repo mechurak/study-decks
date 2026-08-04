@@ -275,6 +275,7 @@ import { encodeBase64 } from 'jsr:@std/encoding/base64'
 ## CORS 처리
 
 브라우저에서 직접 호출한다면 반드시 필요하다.
+요청/응답을 로우레벨로 다루는 예제라 `Deno.serve` 형태를 그대로 쓴다.
 
 ```ts
 // supabase/functions/_shared/cors.ts
